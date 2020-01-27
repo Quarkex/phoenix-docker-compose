@@ -1,0 +1,34 @@
+#!/bin/bash
+app_name="$(docker-compose config | grep 'COMPOSE_PROJECT_NAME' | sort | uniq | sed -e 's/.* COMPOSE_PROJECT_NAME: //' -e 's/phx-//' )"
+docker-compose run --rm phoenix bash -c "mix phx.new . --app $app_name"
+
+for folder in data/src/*/config data/src/config; do
+
+    project="${folder%/config}";
+    project="${project##*/}";
+    if [[ -d "$folder" ]]; then
+        sed  -i \
+            -e 's/host: "\(example.com\|localhost\)"/host: List.first(String.split(System.get_env("DOMAINS"), ",")) || "localhost"/g' \
+            -e 's/username: "postgres"/username: List.first(String.split(System.get_env("DB_USER"), ",")) || "postgres"/g' \
+            -e 's/password: "postgres"/password: List.first(String.split(System.get_env("DB_PASS"), ",")) || "postgres"/g' \
+            -e 's/hostname: "localhost"/hostname: "db"/g' \
+            "$folder/config.exs" \
+            "$folder/dev.exs" \
+            "$folder/prod.exs" \
+            "$folder/prod.secret.exs";
+
+        if [[ ! "$project" == "src" ]]; then
+
+            sed -i \
+            -e 's/host: "\(example.com\|localhost\)"/host: List.first(String.split(System.get_env("DOMAINS"), ",")) || "localhost"/g' \
+            -e 's/username: "postgres"/username: List.first(String.split(System.get_env("DB_USER"), ",")) || "postgres"/g' \
+            -e 's/password: "postgres"/password: List.first(String.split(System.get_env("DB_PASS"), ",")) || "postgres"/g' \
+            -e 's/hostname: "localhost"/hostname: "db"/g' \
+                "$folder/$project.exs";
+
+        fi
+
+    fi
+done
+docker-compose run --rm phoenix bash -c "mix ecto.create"
+docker-compose down

@@ -1,0 +1,49 @@
+version: '3'
+services:
+  phoenix:
+    container_name: ${COMPOSE_PROJECT_NAME}
+    build:
+        dockerfile: Dockerfile
+        context: ./
+    build: .
+    expose:
+      - 4000
+    restart: always
+    volumes:
+      - ./data/src:/app
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      LETSENCRYPT_HOST: ${DOMAINS}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+      VIRTUAL_HOST: ${DOMAINS}
+      VIRTUAL_PORT: 4000
+      PGUSER: ${DB_USER}
+      PGPASSWORD: ${DB_PASS}
+      PGDATABASE: ${DB_NAME}
+      PGPORT: 5432
+      PGHOST: db
+    networks:
+      - default
+      - backend
+  db:
+    container_name: ${COMPOSE_PROJECT_NAME}-db
+    image: postgres:10
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+      POSTGRES_ROOT_PASSWORD: ${DB_PASS}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    restart: always
+    volumes:
+        - ./data/db:/var/lib/postgresql/data:rw
+    networks:
+      - backend
+networks:
+  backend:
+    driver: bridge
+  default:
+    external:
+      name: nginx-proxy
