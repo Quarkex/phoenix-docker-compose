@@ -30,8 +30,6 @@ services:
     networks:
       - default
 networks:
-  backend:
-    driver: bridge
   default:
     external:
       name: nginx-proxy
