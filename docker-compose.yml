@@ -2,45 +2,32 @@ version: '3'
 services:
   phoenix:
     container_name: ${COMPOSE_PROJECT_NAME}
-    build:
-        dockerfile: Dockerfile
-        context: ./
-    build: .
+    image: phoenix
     expose:
       - 4000
     restart: always
     volumes:
-      - ./data/src:/app
-    depends_on:
-      - db
+      - ./data:/app
     env_file:
       - .env
     environment:
-      LETSENCRYPT_HOST: ${DOMAINS}
+      LETSENCRYPT_HOST:  ${DOMAIN}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
-      VIRTUAL_HOST: ${DOMAINS}
-      VIRTUAL_PORT: 4000
-      PGUSER: ${DB_USER}
-      PGPASSWORD: ${DB_PASS}
-      PGDATABASE: ${DB_NAME}
-      PGPORT: 5432
-      PGHOST: db
+      VIRTUAL_HOST:      ${DOMAIN}
+      VIRTUAL_PORT:      4000
+      DB_USER:           ${DB_USER}
+      DB_PASS:           ${DB_PASS}
+      DB_NAME:           ${DB_NAME}
+      DB_PORT:           ${DB_PORT}
+      DB_HOST:           ${DB_HOST}
+      DATABASE_URL:      ecto://${DB_USER}:${DB_PASS}@${DB_HOST}${DB_PORT}/${DB_NAME}
+      PGUSER:            ${DB_USER}
+      PGPASSWORD:        ${DB_PASS}
+      PGDATABASE:        ${DB_NAME}
+      PGPORT:            ${DB_PORT}
+      PGHOST:            ${DB_HOST}
     networks:
       - default
-      - backend
-  db:
-    container_name: ${COMPOSE_PROJECT_NAME}-db
-    image: postgres:10
-    environment:
-      POSTGRES_USER: ${DB_USER}
-      POSTGRES_PASSWORD: ${DB_PASS}
-      POSTGRES_ROOT_PASSWORD: ${DB_PASS}
-      PGDATA: /var/lib/postgresql/data/pgdata
-    restart: always
-    volumes:
-        - ./data/db:/var/lib/postgresql/data:rw
-    networks:
-      - backend
 networks:
   backend:
     driver: bridge
