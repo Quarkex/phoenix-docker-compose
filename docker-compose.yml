@@ -4,7 +4,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}
     image: phoenix
     expose:
-      - 4000
+      - ${PORT}
     restart: always
     volumes:
       - ./data:/app
@@ -14,19 +14,21 @@ services:
       LETSENCRYPT_HOST:  ${DOMAIN}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
       VIRTUAL_HOST:      ${DOMAIN}
-      VIRTUAL_PORT:      4000
-      SECRET_KEY_BASE:   ${SECRET_KEY_BASE}
+      VIRTUAL_PORT:      ${PORT}
+      TITLE:             ${TITLE}
+      DOMAIN:            ${DOMAIN}
+      APP_NAME:          ${APP_NAME}
       DB_USER:           ${DB_USER}
       DB_PASS:           ${DB_PASS}
       DB_NAME:           ${DB_NAME}
       DB_PORT:           ${DB_PORT}
       DB_HOST:           ${DB_HOST}
-      DATABASE_URL:      ecto://${DB_USER}:${DB_PASS}@${DB_HOST}${DB_PORT}/${DB_NAME}
       PGUSER:            ${DB_USER}
       PGPASSWORD:        ${DB_PASS}
       PGDATABASE:        ${DB_NAME}
       PGPORT:            ${DB_PORT}
       PGHOST:            ${DB_HOST}
+      MIX_ENV:           ${MIX_ENV}
     networks:
       - default
 networks:
